@@ -45,35 +45,6 @@ const NO_DEPOSIT: Balance = 0;
 */
 
 
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct ProfileObjects {
-    name: Option<String>,
-    last_name: Option<String>,
-    pen_name: Option<String>,
-    bio: Option<String>,
-    website: Option<String>,
-    twitter: Option<String>,
-    sales: i128,
-    avatar: Option<String>,
-}
-
-
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct ProfileJson {
-    user_id: AccountId,
-    name: String,
-    last_name: String,
-    pen_name: String,
-    bio: String,
-    website: String,
-    twitter: String,
-    sales: i128,
-    avatar: String,
-}
-
-
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]
 #[serde(crate = "near_sdk::serde")]
 pub struct CategoriesObjet {
