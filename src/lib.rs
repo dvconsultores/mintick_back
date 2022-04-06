@@ -173,7 +173,6 @@ pub struct Contract {
     // CUSTOM
     token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>,
     vault_id: AccountId,
-    profile: UnorderedMap<AccountId, ProfileObjects>,
     categories: Vec<CategoriesJson>,
     marketplace: UnorderedMap<TokenSeriesId, MarketJson>,
     transaction: UnorderedMap<TokenSeriesId, TransactionJson>,
@@ -205,8 +204,8 @@ impl Contract {
             vault_id,
             NFTContractMetadata {
                 spec: NFT_METADATA_SPEC.to_string(),
-                name: "Near Book Shop".to_string(),
-                symbol: "Near Book Shop".to_string(),
+                name: "MinTick".to_string(),
+                symbol: "MinTick".to_string(),
                 icon: Some(DATA_IMAGE_SVG_NEAR_ICON.to_string()),
                 base_uri: None,
                 reference: None,
@@ -234,7 +233,7 @@ impl Contract {
             categories: Vec::new(),
             marketplace: UnorderedMap::new(b"0".to_vec()),
             transaction: UnorderedMap::new(b"s".to_vec()),
-            administrators: vec!["bookshop.testnet".to_string(), "book.bookshop.testnet".to_string(), "vicious2403.testnet".to_string()],
+            administrators: vec!["mintick.testnet".to_string(), "min.mintick.testnet".to_string()],
         }
     }
 
@@ -253,87 +252,6 @@ impl Contract {
         self.administrators.remove(index);
     }
 
-    pub fn set_profile(&mut self, name: Option<String>,
-        last_name: Option<String>,
-        pen_name: Option<String>,
-        bio: Option<String>,
-        website: Option<String>,
-        twitter: Option<String>,
-        avatar: Option<String>
-    ) -> ProfileObjects {
-        let profile = self.profile.get(&env::signer_account_id());
-        if profile.is_some() {
-            env::panic(b"profile already exists");
-        }
-        
-        let data = ProfileObjects {
-            name: name,
-            last_name: last_name,
-            pen_name: pen_name,
-            bio: bio,
-            website: website,
-            twitter: twitter,
-            sales: 0,
-            avatar: avatar,
-        };
-
-        self.profile.insert(&env::signer_account_id(), &data);
-        env::log(b"profile Created");
-        data
-    }
-
-    pub fn put_profile(&mut self, name: Option<String>,
-        last_name: Option<String>,
-        pen_name: Option<String>,
-        bio: Option<String>,
-        website: Option<String>,
-        twitter: Option<String>,
-        avatar: Option<String>
-    ) -> ProfileObjects {
-        let mut return_data = ProfileObjects {
-            name: name.clone(),
-            last_name: last_name.clone(),
-            pen_name: pen_name.clone(),
-            bio: bio.clone(),
-            website: website.clone(),
-            twitter: twitter.clone(),
-            sales: 0,
-            avatar: avatar.clone(),
-        };
-        let mut profile = self.profile.get(&env::signer_account_id()).expect("Profile does not exist");
-        profile.name = name;
-        profile.last_name = last_name;
-        profile.pen_name = pen_name;
-        profile.bio = bio;
-        profile.website = website;
-        profile.twitter = twitter;
-        profile.avatar = avatar;
-
-        let sales = profile.sales.clone();
-        return_data.sales = sales;
-
-        self.profile.insert(&env::signer_account_id(), &profile);
-
-        env::log(b"profile Update");
-
-        return_data
-    }
-
-
-    pub fn get_profile(&self, user_id: AccountId) -> ProfileObjects {
-        let profile = self.profile.get(&user_id).expect("Profile does not exist");
-
-        ProfileObjects {
-            name: profile.name,
-            last_name: profile.last_name,
-            pen_name: profile.pen_name,
-            bio: profile.bio,
-            website: profile.website,
-            twitter: profile.twitter,
-            sales: profile.sales,
-            avatar: profile.avatar,
-        }
-	}
 
     pub fn set_category(&mut self, name: String, img: String) -> CategoriesJson {      
         self.administrators.iter().find(|&x| x == &env::signer_account_id()).expect("Only administrators can set categories");
@@ -387,6 +305,7 @@ impl Contract {
         price: Option<U128>,
         royalty: Option<HashMap<AccountId, u32>>,
     ) -> TokenSeriesJson {
+        self.administrators.iter().find(|&x| x == &env::signer_account_id()).expect("Only admins");
         let initial_storage_usage = env::storage_usage();
         let caller_id = env::signer_account_id();
 
